@@ -149,7 +149,53 @@ loadSpriteAtlas("sprites/hammer.png", {
         }
     }
 })
+loadSpriteAtlas("sprites/inversecorners.png",{
+    "inverseBottomRight":{
+        x:0,
+        y:0,
+        width:32,
+        height:32,
+        sliceX:2,
+        sliceY:2,
+        anims:{
+            normal:0,
+        },
+    },
+        "inverseBottomLeft":{
+            x:16,
+            y:0,
+            width:32,
+            height:32,
+            sliceX:2,
+            sliceY:2,
+            anims:{
+                normal:1,
+            }
 
+        },
+        "inverseTopRight":{
+            x:0,
+            y:16,
+            width:32,
+            height:32,
+            sliceX:2,
+            sliceY:2,
+            anims:{
+                normal:3,
+            }
+        },
+        "inverseTopLeft":{
+            x:16,
+            y:16,
+            width:32,
+            height:32,
+            sliceX:2,
+            sliceY:2,
+            anims:{
+                normal:2,
+            }
+    }
+})
 
 
 const dworf=add([
@@ -236,8 +282,11 @@ setGravity(2400)
 
 const level = addLevel([
     // Design the level layout with symbols
-    "13          @  13",
-    "75222222222222259",
+    "       @        ",
+    "13            13",
+    "4)222222222222(6",
+    "4555555555555556",
+    "4555555555555556",
 ], {
     // The size of each grid
     tileWidth: 80,
@@ -302,25 +351,76 @@ const level = addLevel([
             anchor("center"),
             body({ isStatic: true }),
         ],
-        "9": ()=>[
+        "9": ()=> [
             sprite("bottomRight"),
             area(),
             scale(5,5),
             anchor("center"),
             body({ isStatic: true }),
         ],
-        "@": ()=>[
+        "@": ()=> [
             sprite("slime"),
-            area(),
+            area({scale:.7}),
             scale(5,5),
             anchor("center"),
             body(),
             patrol(),
             "enemy",
         ],
-    },
-});
+        "(": ()=> [
+            sprite("inverseTopLeft"),
+            area(),
+            scale(5,5),
+            anchor("center"),
+            body({ isStatic: true }),
+        ],
+        ")": ()=> [
+            sprite("inverseTopRight"),
+            area(),
+            scale(5,5),
+            anchor("center"),
+            body({ isStatic: true }),
+        ],
+        "<": ()=> [
+            sprite("inverseBottomLeft"),
+            area(),
+            scale(5,5),
+            anchor("center"),
+            body({ isStatic: true }),
+        ],
+        ">": ()=> [
+            sprite("inverseBottomRight"),
+            area(),
+            scale(5,5),
+            anchor("center"),
+            body({ isStatic: true }),
+        ],
+    }
+})
 
 
-function patrol(speed = 60, dir = 1) {
-}
+        function patrol(speed = 60, dir = 1) {
+            return {
+                id: "patrol",
+                require: ["pos", "area"],
+                add() {
+                    this.on("collide", (obj, col) => {
+                        if (col.isLeft() || col.isRight()) {
+                            dir = -dir;
+                            
+                        }
+                        if (col.isLeft()){
+                            this.flipX = false;
+                        }
+                        if (col.isRight()){
+                            this.flipX= true;
+                        }
+                    });
+                    this.play("shuffle",{loop: true});
+                },
+                update() {
+                    this.move(speed * dir, 0);
+                    
+                },
+            };
+        }
